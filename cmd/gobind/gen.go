@@ -80,14 +80,14 @@ func genPkg(lang string, p *types.Package, astFiles []*ast.File, allPkg []*types
 		closer()
 		// Generate support files along with the universe package
 		if p == nil {
-			dir, err := packageDir("golang.org/x/mobile/bind")
+			path, err := os.Getwd()
+			dir, err := packageDir(path)
 			if err != nil {
 				errorf(`"golang.org/x/mobile/bind" is not found; run go get golang.org/x/mobile/bind: %v`, err)
 				return
 			}
-			repo := filepath.Clean(filepath.Join(dir, "..")) // golang.org/x/mobile/gomobile directory.
 			for _, javaFile := range []string{"Seq.java"} {
-				src := filepath.Join(repo, "bind/java/"+javaFile)
+				src := filepath.Join(dir, "bind/java/"+javaFile)
 				srcContent, err := os.ReadFile(src)
 				if err != nil {
 					errorf("failed to open Java support file: %v", err)
@@ -105,7 +105,7 @@ func genPkg(lang string, p *types.Package, astFiles []*ast.File, allPkg []*types
 				errorf("unable to import bind/java: %v", err)
 				return
 			}
-			javaDir, err := packageDir("golang.org/x/mobile/bind/java")
+			javaDir, err := packageDir(path + "/bind/java")
 			if err != nil {
 				errorf("unable to import bind/java: %v", err)
 				return
@@ -115,6 +115,7 @@ func genPkg(lang string, p *types.Package, astFiles []*ast.File, allPkg []*types
 			copyFile(filepath.Join("src", "gobind", "seq_android.h"), filepath.Join(javaDir, "seq_android.h"))
 		}
 	case "go":
+		path, err := os.Getwd()
 		w, closer := writer(filepath.Join("src", "gobind", fname))
 		conf.Writer = w
 		processErr(bind.GenGo(conf))
@@ -127,12 +128,11 @@ func genPkg(lang string, p *types.Package, astFiles []*ast.File, allPkg []*types
 		genPkgH(w, "seq")
 		io.Copy(w, &buf)
 		closer()
-		dir, err := packageDir("golang.org/x/mobile/bind")
 		if err != nil {
 			errorf("unable to import bind: %v", err)
 			return
 		}
-		copyFile(filepath.Join("src", "gobind", "seq.go"), filepath.Join(dir, "seq.go.support"))
+		copyFile(filepath.Join("src", "gobind", "seq.go"), filepath.Join(path+"/bind", "seq.go.support"))
 	case "objc":
 		g := &bind.ObjcGen{
 			Generator: generator,
@@ -359,9 +359,9 @@ func defaultFileName(lang string, pkg *types.Package) string {
 		return className + ".java"
 	case "go":
 		if pkg == nil {
-			return "go_main.go"
+			return "palestine_main.go"
 		}
-		return "go_" + pkg.Name() + "main.go"
+		return "palestine_" + pkg.Name() + "main.go"
 	case "objc":
 		if pkg == nil {
 			return "Universe.m"

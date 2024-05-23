@@ -299,10 +299,10 @@ func (g *ClassGen) GenC() {
 	g.Printf("\n")
 	g.Printf("void init_proxies() {\n")
 	g.Indent()
-	g.Printf("JNIEnv *env = go_seq_push_local_frame(%d);\n", len(g.classes))
+	g.Printf("JNIEnv *env = palestine_seq_push_local_frame(%d);\n", len(g.classes))
 	g.Printf("jclass clazz;\n")
 	for _, cls := range g.classes {
-		g.Printf("clazz = go_seq_find_class(%q);\n", strings.Replace(cls.FindName, ".", "/", -1))
+		g.Printf("clazz = palestine_seq_find_class(%q);\n", strings.Replace(cls.FindName, ".", "/", -1))
 		g.Printf("if (clazz != NULL) {\n")
 		g.Indent()
 		g.Printf("class_%s = (*env)->NewGlobalRef(env, clazz);\n", cls.JNIName)
@@ -317,18 +317,18 @@ func (g *ClassGen) GenC() {
 				}
 				g.Printf("m_s_%s_%s = ", cls.JNIName, f.JNIName)
 				if f.Constructor {
-					g.Printf("go_seq_get_method_id(clazz, \"<init>\", %q);\n", f.Desc)
+					g.Printf("palestine_seq_get_method_id(clazz, \"<init>\", %q);\n", f.Desc)
 				} else {
-					g.Printf("go_seq_get_static_method_id(clazz, %q, %q);\n", f.Name, f.Desc)
+					g.Printf("palestine_seq_get_static_method_id(clazz, %q, %q);\n", f.Name, f.Desc)
 				}
 			}
 		}
 		for _, fs := range cls.AllMethods {
 			for _, f := range fs.Funcs {
 				if g.isFuncSupported(f) {
-					g.Printf("m_%s_%s = go_seq_get_method_id(clazz, %q, %q);\n", cls.JNIName, f.JNIName, f.Name, f.Desc)
+					g.Printf("m_%s_%s = palestine_seq_get_method_id(clazz, %q, %q);\n", cls.JNIName, f.JNIName, f.Name, f.Desc)
 					if _, ok := g.goClsMap[cls.Name]; ok {
-						g.Printf("sm_%s_%s = go_seq_get_method_id(sclass_%s, %q, %q);\n", cls.JNIName, f.JNIName, cls.JNIName, f.Name, f.Desc)
+						g.Printf("sm_%s_%s = palestine_seq_get_method_id(sclass_%s, %q, %q);\n", cls.JNIName, f.JNIName, cls.JNIName, f.Name, f.Desc)
 					}
 				}
 			}
@@ -336,7 +336,7 @@ func (g *ClassGen) GenC() {
 		g.Outdent()
 		g.Printf("}\n")
 	}
-	g.Printf("go_seq_pop_local_frame(env);\n")
+	g.Printf("palestine_seq_pop_local_frame(env);\n")
 	g.Outdent()
 	g.Printf("}\n\n")
 	for _, cls := range g.classes {
@@ -367,9 +367,9 @@ func (g *ClassGen) genCMethodBody(cls *java.Class, f *java.Func, virtual bool) {
 	g.Printf(" {\n")
 	g.Indent()
 	// Add 1 for the 'this' argument
-	g.Printf("JNIEnv *env = go_seq_push_local_frame(%d);\n", len(f.Params)+1)
+	g.Printf("JNIEnv *env = palestine_seq_push_local_frame(%d);\n", len(f.Params)+1)
 	g.Printf("// Must be a Java object\n")
-	g.Printf("jobject _this = go_seq_from_refnum(env, this, NULL, NULL);\n")
+	g.Printf("jobject _this = palestine_seq_from_refnum(env, this, NULL, NULL);\n")
 	for i, a := range f.Params {
 		g.genCToJava(fmt.Sprintf("a%d", i), a)
 	}
@@ -395,13 +395,13 @@ func (g *ClassGen) genCMethodBody(cls *java.Class, f *java.Func, virtual bool) {
 		g.Printf(", _a%d", i)
 	}
 	g.Printf(");\n")
-	g.Printf("jobject _exc = go_seq_get_exception(env);\n")
-	g.Printf("int32_t _exc_ref = go_seq_to_refnum(env, _exc);\n")
+	g.Printf("jobject _exc = palestine_seq_get_exception(env);\n")
+	g.Printf("int32_t _exc_ref = palestine_seq_to_refnum(env, _exc);\n")
 	if f.Ret != nil {
 		g.genCRetClear("res", f.Ret, "_exc")
 		g.genJavaToC("res", f.Ret)
 	}
-	g.Printf("go_seq_pop_local_frame(env);\n")
+	g.Printf("palestine_seq_pop_local_frame(env);\n")
 	if f.Ret != nil {
 		g.Printf("ret_%s __res = {_res, _exc_ref};\n", f.Ret.CType())
 		g.Printf("return __res;\n")
@@ -453,7 +453,7 @@ func (g *ClassGen) genC(cls *java.Class) {
 			g.genCFuncDecl(cls.JNIName, f)
 			g.Printf(" {\n")
 			g.Indent()
-			g.Printf("JNIEnv *env = go_seq_push_local_frame(%d);\n", len(f.Params))
+			g.Printf("JNIEnv *env = palestine_seq_push_local_frame(%d);\n", len(f.Params))
 			for i, a := range f.Params {
 				g.genCToJava(fmt.Sprintf("a%d", i), a)
 			}
@@ -469,13 +469,13 @@ func (g *ClassGen) genC(cls *java.Class) {
 				g.Printf(", _a%d", i)
 			}
 			g.Printf(");\n")
-			g.Printf("jobject _exc = go_seq_get_exception(env);\n")
-			g.Printf("int32_t _exc_ref = go_seq_to_refnum(env, _exc);\n")
+			g.Printf("jobject _exc = palestine_seq_get_exception(env);\n")
+			g.Printf("int32_t _exc_ref = palestine_seq_to_refnum(env, _exc);\n")
 			if f.Ret != nil {
 				g.genCRetClear("res", f.Ret, "_exc")
 				g.genJavaToC("res", f.Ret)
 			}
-			g.Printf("go_seq_pop_local_frame(env);\n")
+			g.Printf("palestine_seq_pop_local_frame(env);\n")
 			if f.Ret != nil {
 				g.Printf("ret_%s __res = {_res, _exc_ref};\n", f.Ret.CType())
 				g.Printf("return __res;\n")
@@ -537,7 +537,7 @@ func (g *ClassGen) genGo(cls *java.Class) {
 	g.Printf("func init_%s() {\n", cls.JNIName)
 	g.Indent()
 	g.Printf("cls := C.CString(%q)\n", strings.Replace(cls.FindName, ".", "/", -1))
-	g.Printf("clazz := C.go_seq_find_class(cls)\n")
+	g.Printf("clazz := C.palestine_seq_find_class(cls)\n")
 	g.Printf("C.free(unsafe.Pointer(cls))\n")
 	// Before Go 1.11 clazz was a pointer value, an uintptr after.
 	g.Printf("if uintptr(clazz) == 0 {\n")
@@ -564,7 +564,7 @@ func (g *ClassGen) genGo(cls *java.Class) {
 	g.Printf("t := reflect.TypeOf((*proxy_class_%s)(nil))\n", cls.JNIName)
 	g.Printf("cv := reflect.ValueOf(v).Convert(t).Interface().(*proxy_class_%s)\n", cls.JNIName)
 	g.Printf("ref := C.jint(_seq.ToRefNum(cv))\n")
-	g.Printf("if C.go_seq_isinstanceof(ref, class_%s) != 1 {\n", cls.JNIName)
+	g.Printf("if C.palestine_seq_isinstanceof(ref, class_%s) != 1 {\n", cls.JNIName)
 	g.Printf("	panic(fmt.Errorf(\"%%T is not an instance of %%s\", v, %q))\n", cls.Name)
 	g.Printf("}\n")
 	g.Printf("return cv\n")
@@ -598,7 +598,7 @@ func (g *ClassGen) genGo(cls *java.Class) {
 		g.Printf("type super_%s struct {*proxy_class_%[1]s}\n\n", cls.JNIName)
 		g.Printf("func (p *proxy_class_%s) Unwrap() interface{} {\n", cls.JNIName)
 		g.Indent()
-		g.Printf("goRefnum := C.go_seq_unwrap(C.jint(p.Bind_proxy_refnum__()))\n")
+		g.Printf("goRefnum := C.palestine_seq_unwrap(C.jint(p.Bind_proxy_refnum__()))\n")
 		g.Printf("return _seq.FromRefNum(int32(goRefnum)).Get().(*%s)\n", goName)
 		g.Outdent()
 		g.Printf("}\n\n")
@@ -836,14 +836,14 @@ func (g *ClassGen) genJavaToC(v string, t *java.Type) {
 	case java.Int, java.Short, java.Char, java.Byte, java.Long, java.Float, java.Double, java.Boolean:
 		g.Printf("%s _%s = %s;\n", t.JNIType(), v, v)
 	case java.String:
-		g.Printf("nstring _%s = go_seq_from_java_string(env, %s);\n", v, v)
+		g.Printf("nstring _%s = palestine_seq_from_java_string(env, %s);\n", v, v)
 	case java.Array:
 		if t.Elem.Kind != java.Byte {
 			panic("unsupported array type")
 		}
-		g.Printf("nbyteslice _%s = go_seq_from_java_bytearray(env, %s, 1);\n", v, v)
+		g.Printf("nbyteslice _%s = palestine_seq_from_java_bytearray(env, %s, 1);\n", v, v)
 	case java.Object:
-		g.Printf("jint _%s = go_seq_to_refnum(env, %s);\n", v, v)
+		g.Printf("jint _%s = palestine_seq_to_refnum(env, %s);\n", v, v)
 	default:
 		panic("invalid kind")
 	}
@@ -854,14 +854,14 @@ func (g *ClassGen) genCToJava(v string, t *java.Type) {
 	case java.Int, java.Short, java.Char, java.Byte, java.Long, java.Float, java.Double, java.Boolean:
 		g.Printf("%s _%s = %s;\n", t.JNIType(), v, v)
 	case java.String:
-		g.Printf("jstring _%s = go_seq_to_java_string(env, %s);\n", v, v)
+		g.Printf("jstring _%s = palestine_seq_to_java_string(env, %s);\n", v, v)
 	case java.Array:
 		if t.Elem.Kind != java.Byte {
 			panic("unsupported array type")
 		}
-		g.Printf("jbyteArray _%s = go_seq_to_java_bytearray(env, %s, 0);\n", v, v)
+		g.Printf("jbyteArray _%s = palestine_seq_to_java_bytearray(env, %s, 0);\n", v, v)
 	case java.Object:
-		g.Printf("jobject _%s = go_seq_from_refnum(env, %s, NULL, NULL);\n", v, v)
+		g.Printf("jobject _%s = palestine_seq_from_refnum(env, %s, NULL, NULL);\n", v, v)
 	default:
 		panic("invalid kind")
 	}

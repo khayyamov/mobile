@@ -28,7 +28,7 @@ func DestroyRef(refnum C.int32_t) {
 }
 
 // encodeString returns a copy of a Go string as a UTF16 encoded nstring.
-// The returned data is freed in go_seq_to_java_string.
+// The returned data is freed in palestine_seq_to_java_string.
 //
 // encodeString uses UTF16 as the intermediate format. Note that UTF8 is an obvious
 // alternative, but JNI only supports a C-safe variant of UTF8 (modified UTF8).
@@ -61,7 +61,7 @@ func decodeString(str C.nstring) string {
 }
 
 // fromSlice converts a slice to a jbyteArray cast as a nbyteslice. If cpy
-// is set, the returned slice is a copy to be free by go_seq_to_java_bytearray.
+// is set, the returned slice is a copy to be free by palestine_seq_to_java_bytearray.
 func fromSlice(s []byte, cpy bool) C.nbyteslice {
 	if s == nil || len(s) == 0 {
 		return C.nbyteslice{}
