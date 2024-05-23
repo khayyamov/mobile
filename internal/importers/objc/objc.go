@@ -19,7 +19,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/sagernet/gomobile/internal/importers"
+	"golang.org/x/mobile/internal/importers"
 )
 
 type parser struct {

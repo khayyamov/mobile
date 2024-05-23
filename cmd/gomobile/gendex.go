@@ -29,7 +29,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/sagernet/gomobile/internal/sdkpath"
+	"golang.org/x/mobile/internal/sdkpath"
 )
 
 var outfile = flag.String("o", "", "result will be written file")

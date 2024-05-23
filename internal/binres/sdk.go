@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/sagernet/gomobile/internal/sdkpath"
+	"golang.org/x/mobile/internal/sdkpath"
 )
 
 // MinSDK is the targeted sdk version for support by package binres.
