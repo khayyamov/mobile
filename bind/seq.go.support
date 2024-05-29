@@ -30,13 +30,13 @@ func init() {
 		if refnum < 0 {
 			panic(fmt.Sprintf("not a foreign ref: %d", refnum))
 		}
-		C.go_seq_dec_ref(C.int32_t(refnum))
+		C.wireguardwarp_seq_dec_ref(C.int32_t(refnum))
 	}
 	_seq.IncForeignRef = func(refnum int32) {
 		if refnum < 0 {
 			panic(fmt.Sprintf("not a foreign ref: %d", refnum))
 		}
-		C.go_seq_inc_ref(C.int32_t(refnum))
+		C.wireguardwarp_seq_inc_ref(C.int32_t(refnum))
 	}
 	// Workaround for issue #17393.
 	signal.Notify(make(chan os.Signal), syscall.SIGPIPE)
