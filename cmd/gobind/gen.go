@@ -359,9 +359,9 @@ func defaultFileName(lang string, pkg *types.Package) string {
 		return className + ".java"
 	case "go":
 		if pkg == nil {
-			return "palestine_main.go"
+			return "libbox_main.go"
 		}
-		return "palestine_" + pkg.Name() + "main.go"
+		return "libbox_" + pkg.Name() + "main.go"
 	case "objc":
 		if pkg == nil {
 			return "Universe.m"

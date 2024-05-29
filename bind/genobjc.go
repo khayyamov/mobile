@@ -656,7 +656,7 @@ func (g *ObjcGen) genGetter(oName string, f *types.Var) {
 	t := f.Type()
 	g.Printf("- (%s)%s {\n", g.objcType(t), objcNameReplacer(lowerFirst(f.Name())))
 	g.Indent()
-	g.Printf("int32_t refnum = palestine_seq_go_to_refnum(self._ref);\n")
+	g.Printf("int32_t refnum = libbox_seq_go_to_refnum(self._ref);\n")
 	g.Printf("%s r0 = ", g.cgoType(f.Type()))
 	g.Printf("proxy%s_%s_%s_Get(refnum);\n", g.pkgPrefix, oName, f.Name())
 	g.genRead("_r0", "r0", f.Type(), modeRetained)
@@ -670,7 +670,7 @@ func (g *ObjcGen) genSetter(oName string, f *types.Var) {
 
 	g.Printf("- (void)set%s:(%s)v {\n", f.Name(), g.objcType(t))
 	g.Indent()
-	g.Printf("int32_t refnum = palestine_seq_go_to_refnum(self._ref);\n")
+	g.Printf("int32_t refnum = libbox_seq_go_to_refnum(self._ref);\n")
 	g.genWrite("v", f.Type(), modeRetained)
 	g.Printf("proxy%s_%s_%s_Set(refnum, _v);\n", g.pkgPrefix, oName, f.Name())
 	g.genRelease("v", f.Type(), modeRetained)
@@ -683,7 +683,7 @@ func (g *ObjcGen) genWrite(varName string, t types.Type, mode varMode) {
 	case *types.Basic:
 		switch t.Kind() {
 		case types.String:
-			g.Printf("nstring _%s = palestine_seq_from_objc_string(%s);\n", varName, varName)
+			g.Printf("nstring _%s = libbox_seq_from_objc_string(%s);\n", varName, varName)
 		default:
 			g.Printf("%s _%s = (%s)%s;\n", g.cgoType(t), varName, g.cgoType(t), varName)
 		}
@@ -692,7 +692,7 @@ func (g *ObjcGen) genWrite(varName string, t types.Type, mode varMode) {
 		case *types.Basic:
 			switch e.Kind() {
 			case types.Uint8: // Byte.
-				g.Printf("nbyteslice _%s = palestine_seq_from_objc_bytearray(%s, %d);\n", varName, varName, toCFlag(mode == modeRetained))
+				g.Printf("nbyteslice _%s = libbox_seq_from_objc_bytearray(%s, %d);\n", varName, varName, toCFlag(mode == modeRetained))
 			default:
 				g.errorf("unsupported type: %s", t)
 			}
@@ -718,11 +718,11 @@ func (g *ObjcGen) genRefWrite(varName string) {
 	g.Printf("if ([%s conformsToProtocol:@protocol(goSeqRefInterface)]) {\n", varName)
 	g.Indent()
 	g.Printf("id<goSeqRefInterface> %[1]s_proxy = (id<goSeqRefInterface>)(%[1]s);\n", varName)
-	g.Printf("_%s = palestine_seq_go_to_refnum(%s_proxy._ref);\n", varName, varName)
+	g.Printf("_%s = libbox_seq_go_to_refnum(%s_proxy._ref);\n", varName, varName)
 	g.Outdent()
 	g.Printf("} else {\n")
 	g.Indent()
-	g.Printf("_%s = palestine_seq_to_refnum(%s);\n", varName, varName)
+	g.Printf("_%s = libbox_seq_to_refnum(%s);\n", varName, varName)
 	g.Outdent()
 	g.Printf("}\n")
 }
@@ -730,7 +730,7 @@ func (g *ObjcGen) genRefWrite(varName string) {
 func (g *ObjcGen) genRefRead(toName, fromName string, t types.Type) {
 	ptype := g.refTypeBase(t)
 	g.Printf("%s* %s = nil;\n", ptype, toName)
-	g.Printf("GoSeqRef* %s_ref = palestine_seq_from_refnum(%s);\n", toName, fromName)
+	g.Printf("GoSeqRef* %s_ref = libbox_seq_from_refnum(%s);\n", toName, fromName)
 	g.Printf("if (%s_ref != NULL) {\n", toName)
 	g.Printf("	%s = %s_ref.obj;\n", toName, toName)
 	g.Printf("	if (%s == nil) {\n", toName)
@@ -748,7 +748,7 @@ func (g *ObjcGen) genRead(toName, fromName string, t types.Type, mode varMode) {
 	case *types.Basic:
 		switch t.Kind() {
 		case types.String:
-			g.Printf("NSString *%s = palestine_seq_to_objc_string(%s);\n", toName, fromName)
+			g.Printf("NSString *%s = libbox_seq_to_objc_string(%s);\n", toName, fromName)
 		case types.Bool:
 			g.Printf("BOOL %s = %s ? YES : NO;\n", toName, fromName)
 		default:
@@ -759,7 +759,7 @@ func (g *ObjcGen) genRead(toName, fromName string, t types.Type, mode varMode) {
 		case *types.Basic:
 			switch e.Kind() {
 			case types.Uint8: // Byte.
-				g.Printf("NSData *%s = palestine_seq_to_objc_bytearray(%s, %d);\n", toName, fromName, toCFlag(mode == modeRetained))
+				g.Printf("NSData *%s = libbox_seq_to_objc_bytearray(%s, %d);\n", toName, fromName, toCFlag(mode == modeRetained))
 			default:
 				g.errorf("unsupported type: %s", t)
 			}
@@ -788,10 +788,10 @@ func (g *ObjcGen) genRead(toName, fromName string, t types.Type, mode varMode) {
 func (g *ObjcGen) genFunc(s *funcSummary, objName string) {
 	skip := 0
 	if objName != "" {
-		g.Printf("int32_t refnum = palestine_seq_go_to_refnum(self._ref);\n")
+		g.Printf("int32_t refnum = libbox_seq_go_to_refnum(self._ref);\n")
 		if s.hasself {
 			skip = 1
-			g.Printf("int32_t _self = palestine_seq_to_refnum(self);\n")
+			g.Printf("int32_t _self = libbox_seq_to_refnum(self);\n")
 		}
 	}
 	for _, p := range s.params[skip:] {
@@ -961,7 +961,7 @@ func (g *ObjcGen) genInterfaceMethodProxy(obj *types.TypeName, m *types.Func) {
 	g.Indent()
 	g.Printf("@autoreleasepool {\n")
 	g.Indent()
-	g.Printf("%s* o = palestine_seq_objc_from_refnum(refnum);\n", g.refTypeBase(obj.Type()))
+	g.Printf("%s* o = libbox_seq_objc_from_refnum(refnum);\n", g.refTypeBase(obj.Type()))
 	for _, p := range s.params {
 		g.genRead("_"+p.name, p.name, p.typ, modeTransient)
 	}
@@ -1040,7 +1040,7 @@ func (g *ObjcGen) genRelease(varName string, t types.Type, mode varMode) {
 			switch e.Kind() {
 			case types.Uint8: // Byte.
 				if mode == modeTransient {
-					// If the argument was not mutable, palestine_seq_from_objc_bytearray created a copy.
+					// If the argument was not mutable, libbox_seq_from_objc_bytearray created a copy.
 					// Free it here.
 					g.Printf("if (![%s isKindOfClass:[NSMutableData class]]) {\n", varName)
 					g.Printf("  free(_%s.ptr);\n", varName)
@@ -1181,7 +1181,7 @@ func (g *ObjcGen) genStructM(obj *types.TypeName, t *types.Struct) {
 		g.Printf("self = [super init];\n")
 		g.Printf("if (self) {\n")
 		g.Indent()
-		g.Printf("__ref = palestine_seq_from_refnum(new_%s_%s());\n", g.pkgPrefix, obj.Name())
+		g.Printf("__ref = libbox_seq_from_refnum(new_%s_%s());\n", g.pkgPrefix, obj.Name())
 		g.Outdent()
 		g.Printf("}\n")
 		g.Printf("return self;\n")
@@ -1250,9 +1250,9 @@ func (g *ObjcGen) genInitM(obj *types.TypeName, f *types.Func) {
 	}
 	if len(s.retParams) == 2 {
 		g.Printf("int32_t refnum = res.r0;\n")
-		g.Printf("GoSeqRef *_err = palestine_seq_from_refnum(res.r1);\n")
+		g.Printf("GoSeqRef *_err = libbox_seq_from_refnum(res.r1);\n")
 	}
-	g.Printf("__ref = palestine_seq_from_refnum(refnum);\n")
+	g.Printf("__ref = libbox_seq_from_refnum(refnum);\n")
 	if len(s.retParams) == 2 {
 		g.Printf("if (_err != NULL)\n")
 		g.Printf("	return nil;\n")
