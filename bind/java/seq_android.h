@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#ifndef __palestine_seq_ANDROID_HDR__
-#define __palestine_seq_ANDROID_HDR__
+#ifndef __libv2ray_seq_ANDROID_HDR__
+#define __libv2ray_seq_ANDROID_HDR__
 
 #include <stdint.h>
 #include <android/log.h>
@@ -11,10 +11,10 @@
 #include <stdlib.h>
 #include <jni.h>
 
-#define LOG_INFO(...) __android_log_print(ANDROID_LOG_INFO, "palestine/Seq", __VA_ARGS__)
+#define LOG_INFO(...) __android_log_print(ANDROID_LOG_INFO, "libv2ray/Seq", __VA_ARGS__)
 #define LOG_FATAL(...)                                             \
   {                                                                \
-    __android_log_print(ANDROID_LOG_FATAL, "palestine/Seq", __VA_ARGS__); \
+    __android_log_print(ANDROID_LOG_FATAL, "libv2ray/Seq", __VA_ARGS__); \
     abort();                                                       \
   }
 
@@ -32,36 +32,36 @@ typedef struct nbyteslice {
 } nbyteslice;
 typedef jlong nint;
 
-extern void palestine_seq_dec_ref(int32_t ref);
-extern void palestine_seq_inc_ref(int32_t ref);
-// palestine_seq_unwrap takes a reference number to a Java wrapper and returns
+extern void libv2ray_seq_dec_ref(int32_t ref);
+extern void libv2ray_seq_inc_ref(int32_t ref);
+// libv2ray_seq_unwrap takes a reference number to a Java wrapper and returns
 // a reference number to its wrapped Go object.
-extern int32_t palestine_seq_unwrap(jint refnum);
-extern int32_t palestine_seq_to_refnum(JNIEnv *env, jobject o);
-extern int32_t palestine_seq_to_refnum_go(JNIEnv *env, jobject o);
-extern jobject palestine_seq_from_refnum(JNIEnv *env, int32_t refnum, jclass proxy_class, jmethodID proxy_cons);
+extern int32_t libv2ray_seq_unwrap(jint refnum);
+extern int32_t libv2ray_seq_to_refnum(JNIEnv *env, jobject o);
+extern int32_t libv2ray_seq_to_refnum_go(JNIEnv *env, jobject o);
+extern jobject libv2ray_seq_from_refnum(JNIEnv *env, int32_t refnum, jclass proxy_class, jmethodID proxy_cons);
 
-extern void palestine_seq_maybe_throw_exception(JNIEnv *env, jobject msg);
-// palestine_seq_get_exception returns any pending exception and clears the exception status.
-extern jobject palestine_seq_get_exception(JNIEnv *env);
+extern void libv2ray_seq_maybe_throw_exception(JNIEnv *env, jobject msg);
+// libv2ray_seq_get_exception returns any pending exception and clears the exception status.
+extern jobject libv2ray_seq_get_exception(JNIEnv *env);
 
-extern jbyteArray palestine_seq_to_java_bytearray(JNIEnv *env, nbyteslice s, int copy);
-extern nbyteslice palestine_seq_from_java_bytearray(JNIEnv *env, jbyteArray s, int copy);
-extern void palestine_seq_release_byte_array(JNIEnv *env, jbyteArray arr, jbyte* ptr);
+extern jbyteArray libv2ray_seq_to_java_bytearray(JNIEnv *env, nbyteslice s, int copy);
+extern nbyteslice libv2ray_seq_from_java_bytearray(JNIEnv *env, jbyteArray s, int copy);
+extern void libv2ray_seq_release_byte_array(JNIEnv *env, jbyteArray arr, jbyte* ptr);
 
-extern jstring palestine_seq_to_java_string(JNIEnv *env, nstring str);
-extern nstring palestine_seq_from_java_string(JNIEnv *env, jstring s);
+extern jstring libv2ray_seq_to_java_string(JNIEnv *env, nstring str);
+extern nstring libv2ray_seq_from_java_string(JNIEnv *env, jstring s);
 
 // push_local_frame retrieves or creates the JNIEnv* for the current thread
 // and pushes a JNI reference frame. Must be matched with call to pop_local_frame.
-extern JNIEnv *palestine_seq_push_local_frame(jint cap);
+extern JNIEnv *libv2ray_seq_push_local_frame(jint cap);
 // Pop the current local frame, releasing all JNI local references in it
-extern void palestine_seq_pop_local_frame(JNIEnv *env);
+extern void libv2ray_seq_pop_local_frame(JNIEnv *env);
 
 // Return a global reference to the given class. Return NULL and clear exception if not found.
-extern jclass palestine_seq_find_class(const char *name);
-extern jmethodID palestine_seq_get_static_method_id(jclass clazz, const char *name, const char *sig);
-extern jmethodID palestine_seq_get_method_id(jclass clazz, const char *name, const char *sig);
-extern int palestine_seq_isinstanceof(jint refnum, jclass clazz);
+extern jclass libv2ray_seq_find_class(const char *name);
+extern jmethodID libv2ray_seq_get_static_method_id(jclass clazz, const char *name, const char *sig);
+extern jmethodID libv2ray_seq_get_method_id(jclass clazz, const char *name, const char *sig);
+extern int libv2ray_seq_isinstanceof(jint refnum, jclass clazz);
 
-#endif // __palestine_seq_ANDROID_HDR__
+#endif // __libv2ray_seq_ANDROID_HDR__

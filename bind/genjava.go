@@ -902,7 +902,7 @@ func (g *JavaGen) genJavaToC(varName string, t types.Type, mode varMode) {
 	case *types.Basic:
 		switch t.Kind() {
 		case types.String:
-			g.Printf("nstring _%s = palestine_seq_from_java_string(env, %s);\n", varName, varName)
+			g.Printf("nstring _%s = libv2ray_seq_from_java_string(env, %s);\n", varName, varName)
 		default:
 			g.Printf("%s _%s = (%s)%s;\n", g.cgoType(t), varName, g.cgoType(t), varName)
 		}
@@ -911,7 +911,7 @@ func (g *JavaGen) genJavaToC(varName string, t types.Type, mode varMode) {
 		case *types.Basic:
 			switch e.Kind() {
 			case types.Uint8: // Byte.
-				g.Printf("nbyteslice _%s = palestine_seq_from_java_bytearray(env, %s, %d);\n", varName, varName, toCFlag(mode == modeRetained))
+				g.Printf("nbyteslice _%s = libv2ray_seq_from_java_bytearray(env, %s, %d);\n", varName, varName, toCFlag(mode == modeRetained))
 			default:
 				g.errorf("unsupported type: %s", t)
 			}
@@ -921,12 +921,12 @@ func (g *JavaGen) genJavaToC(varName string, t types.Type, mode varMode) {
 	case *types.Named:
 		switch u := t.Underlying().(type) {
 		case *types.Interface:
-			g.Printf("int32_t _%s = palestine_seq_to_refnum(env, %s);\n", varName, varName)
+			g.Printf("int32_t _%s = libv2ray_seq_to_refnum(env, %s);\n", varName, varName)
 		default:
 			g.errorf("unsupported named type: %s / %T", u, u)
 		}
 	case *types.Pointer:
-		g.Printf("int32_t _%s = palestine_seq_to_refnum(env, %s);\n", varName, varName)
+		g.Printf("int32_t _%s = libv2ray_seq_to_refnum(env, %s);\n", varName, varName)
 	default:
 		g.Printf("%s _%s = (%s)%s;\n", g.cgoType(t), varName, g.cgoType(t), varName)
 	}
@@ -937,7 +937,7 @@ func (g *JavaGen) genCToJava(toName, fromName string, t types.Type, mode varMode
 	case *types.Basic:
 		switch t.Kind() {
 		case types.String:
-			g.Printf("jstring %s = palestine_seq_to_java_string(env, %s);\n", toName, fromName)
+			g.Printf("jstring %s = libv2ray_seq_to_java_string(env, %s);\n", toName, fromName)
 		case types.Bool:
 			g.Printf("jboolean %s = %s ? JNI_TRUE : JNI_FALSE;\n", toName, fromName)
 		default:
@@ -948,7 +948,7 @@ func (g *JavaGen) genCToJava(toName, fromName string, t types.Type, mode varMode
 		case *types.Basic:
 			switch e.Kind() {
 			case types.Uint8: // Byte.
-				g.Printf("jbyteArray %s = palestine_seq_to_java_bytearray(env, %s, %d);\n", toName, fromName, toCFlag(mode == modeRetained))
+				g.Printf("jbyteArray %s = libv2ray_seq_to_java_bytearray(env, %s, %d);\n", toName, fromName, toCFlag(mode == modeRetained))
 			default:
 				g.errorf("unsupported type: %s", t)
 			}
@@ -984,7 +984,7 @@ func (g *JavaGen) genFromRefnum(toName, fromName string, t types.Type, o *types.
 		return
 	}
 	p := pkgPrefix(oPkg)
-	g.Printf("jobject %s = palestine_seq_from_refnum(env, %s, ", toName, fromName)
+	g.Printf("jobject %s = libv2ray_seq_from_refnum(env, %s, ", toName, fromName)
 	if isJava {
 		g.Printf("NULL, NULL")
 	} else {
@@ -1019,7 +1019,7 @@ func (g *JavaGen) javaPkgName(pkg *types.Package) string {
 // instead.
 func JavaPkgName(pkgPrefix string, pkg *types.Package) string {
 	if pkg == nil {
-		return "palestine"
+		return "libv2ray"
 	}
 	s := javaNameReplacer(pkg.Name())
 	if pkgPrefix == "" {
@@ -1085,7 +1085,7 @@ func (g *JavaGen) genJNIField(o *types.TypeName, f *types.Var) {
 	g.Printf("JNIEXPORT void JNICALL\n")
 	g.Printf("Java_%s_%s_set%s(JNIEnv *env, jobject this, %s v) {\n", g.jniPkgName(), n, java.JNIMangle(f.Name()), g.jniType(f.Type()))
 	g.Indent()
-	g.Printf("int32_t o = palestine_seq_to_refnum_go(env, this);\n")
+	g.Printf("int32_t o = libv2ray_seq_to_refnum_go(env, this);\n")
 	g.genJavaToC("v", f.Type(), modeRetained)
 	g.Printf("proxy%s_%s_%s_Set(o, _v);\n", g.pkgPrefix, o.Name(), f.Name())
 	g.genRelease("v", f.Type(), modeRetained)
@@ -1096,7 +1096,7 @@ func (g *JavaGen) genJNIField(o *types.TypeName, f *types.Var) {
 	g.Printf("JNIEXPORT %s JNICALL\n", g.jniType(f.Type()))
 	g.Printf("Java_%s_%s_get%s(JNIEnv *env, jobject this) {\n", g.jniPkgName(), n, java.JNIMangle(f.Name()))
 	g.Indent()
-	g.Printf("int32_t o = palestine_seq_to_refnum_go(env, this);\n")
+	g.Printf("int32_t o = libv2ray_seq_to_refnum_go(env, this);\n")
 	g.Printf("%s r0 = ", g.cgoType(f.Type()))
 	g.Printf("proxy%s_%s_%s_Get(o);\n", g.pkgPrefix, o.Name(), f.Name())
 	g.genCToJava("_r0", "r0", f.Type(), modeRetained)
@@ -1174,7 +1174,7 @@ func (g *JavaGen) genJNIConstructor(f *types.Func, sName string) {
 	if res.Len() == 2 {
 		g.Printf("int32_t refnum = res.r0;\n")
 		g.genCToJava("_err", "res.r1", res.At(1).Type(), modeRetained)
-		g.Printf("palestine_seq_maybe_throw_exception(env, _err);\n")
+		g.Printf("libv2ray_seq_maybe_throw_exception(env, _err);\n")
 	}
 	g.Printf("return refnum;\n")
 	g.Outdent()
@@ -1203,14 +1203,14 @@ func (g *JavaGen) genJNIFuncBody(o *types.Func, sName string, jm *java.Func, isj
 	sig := o.Type().(*types.Signature)
 	res := sig.Results()
 	if sName != "" {
-		g.Printf("int32_t o = palestine_seq_to_refnum_go(env, __this__);\n")
+		g.Printf("int32_t o = libv2ray_seq_to_refnum_go(env, __this__);\n")
 	}
 	params := sig.Params()
 	first := 0
 	if isjava && params.Len() > 0 && params.At(0).Name() == "this" {
 		// Start after the implicit this argument.
 		first = 1
-		g.Printf("int32_t _%s = palestine_seq_to_refnum(env, __this__);\n", g.paramName(params, 0))
+		g.Printf("int32_t _%s = libv2ray_seq_to_refnum(env, __this__);\n", g.paramName(params, 0))
 	}
 	for i := first; i < params.Len(); i++ {
 		name := g.paramName(params, i)
@@ -1252,7 +1252,7 @@ func (g *JavaGen) genJNIFuncBody(o *types.Func, sName string, jm *java.Func, isj
 		if !isErrorType(t) {
 			g.Printf("return _r%d;\n", i)
 		} else {
-			g.Printf("palestine_seq_maybe_throw_exception(env, _r%d);\n", i)
+			g.Printf("libv2ray_seq_maybe_throw_exception(env, _r%d);\n", i)
 		}
 	}
 }
@@ -1267,7 +1267,7 @@ func (g *JavaGen) genRelease(varName string, t types.Type, mode varMode) {
 			switch e.Kind() {
 			case types.Uint8: // Byte.
 				if mode == modeTransient {
-					g.Printf("palestine_seq_release_byte_array(env, %s, _%s.ptr);\n", varName, varName)
+					g.Printf("libv2ray_seq_release_byte_array(env, %s, _%s.ptr);\n", varName, varName)
 				}
 			}
 		}
@@ -1284,8 +1284,8 @@ func (g *JavaGen) genMethodInterfaceProxy(oName string, m *types.Func) {
 	res := sig.Results()
 	g.genInterfaceMethodSignature(m, oName, false, g.paramName)
 	g.Indent()
-	g.Printf("JNIEnv *env = palestine_seq_push_local_frame(%d);\n", params.Len())
-	g.Printf("jobject o = palestine_seq_from_refnum(env, refnum, proxy_class_%s_%s, proxy_class_%s_%s_cons);\n", g.pkgPrefix, oName, g.pkgPrefix, oName)
+	g.Printf("JNIEnv *env = libv2ray_seq_push_local_frame(%d);\n", params.Len())
+	g.Printf("jobject o = libv2ray_seq_from_refnum(env, refnum, proxy_class_%s_%s, proxy_class_%s_%s_cons);\n", g.pkgPrefix, oName, g.pkgPrefix, oName)
 	for i := 0; i < params.Len(); i++ {
 		pn := g.paramName(params, i)
 		g.genCToJava("_"+pn, pn, params.At(i).Type(), modeTransient)
@@ -1305,7 +1305,7 @@ func (g *JavaGen) genMethodInterfaceProxy(oName string, m *types.Func) {
 	if res.Len() > 0 {
 		t := res.At(0).Type()
 		if res.Len() == 2 || isErrorType(t) {
-			g.Printf("jobject exc = palestine_seq_get_exception(env);\n")
+			g.Printf("jobject exc = libv2ray_seq_get_exception(env);\n")
 			errType := types.Universe.Lookup("error").Type()
 			g.genJavaToC("exc", errType, modeRetained)
 			retName = "_exc"
@@ -1325,7 +1325,7 @@ func (g *JavaGen) genMethodInterfaceProxy(oName string, m *types.Func) {
 			retName = "sres"
 		}
 	}
-	g.Printf("palestine_seq_pop_local_frame(env);\n")
+	g.Printf("libv2ray_seq_pop_local_frame(env);\n")
 	if retName != "" {
 		g.Printf("return %s;\n", retName)
 	}
@@ -1706,7 +1706,7 @@ const (
 //   autogenerated by gobind %[3]s %[4]s
 package %[1]s;
 
-import palestine.Seq;
+import libv2ray.Seq;
 
 `
 	cPreamble = gobindPreamble + `// JNI functions for the Go <=> Java bridge.
