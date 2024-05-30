@@ -18,10 +18,10 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"golang.org/x/mobile/bind"
-	"golang.org/x/mobile/internal/importers"
-	"golang.org/x/mobile/internal/importers/java"
-	"golang.org/x/mobile/internal/importers/objc"
+	"github.com/sagernet/gomobile/bind"
+	"github.com/sagernet/gomobile/internal/importers"
+	"github.com/sagernet/gomobile/internal/importers/java"
+	"github.com/sagernet/gomobile/internal/importers/objc"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -83,7 +83,7 @@ func genPkg(lang string, p *types.Package, astFiles []*ast.File, allPkg []*types
 			path, err := os.Getwd()
 			dir, err := packageDir(path)
 			if err != nil {
-				errorf(`"golang.org/x/mobile/bind" is not found; run go get golang.org/x/mobile/bind: %v`, err)
+				errorf(`"github.com/sagernet/gomobile/bind" is not found; run go get github.com/sagernet/gomobile/bind: %v`, err)
 				return
 			}
 			for _, javaFile := range []string{"Seq.java"} {
@@ -156,7 +156,7 @@ func genPkg(lang string, p *types.Package, astFiles []*ast.File, allPkg []*types
 		closer()
 		if p == nil {
 			// Copy support files
-			dir, err := packageDir("golang.org/x/mobile/bind/objc")
+			dir, err := packageDir("github.com/sagernet/gomobile/bind/objc")
 			if err != nil {
 				errorf("unable to import bind/objc: %v", err)
 				return

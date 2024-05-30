@@ -5,5 +5,5 @@
 package bind
 
 import (
-	_ "golang.org/x/mobile/bind/seq"
+	_ "github.com/sagernet/gomobile/bind/seq"
 )
